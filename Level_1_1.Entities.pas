@@ -11,6 +11,10 @@ type
     Y: Single;
     Vel_X: Single;
     Vel_Y: Single;
+    LeftBlocked: Integer;
+    RightBlocked: Integer;
+    UpBlocked: Integer;
+    DownBlocked: Integer;
   end;
 
 var
@@ -24,6 +28,10 @@ var
       Y: 16;
       Vel_X: 0;
       Vel_Y: 0;
+      LeftBlocked: 0;
+      RightBlocked: 0;
+      UpBlocked: 0;
+      DownBlocked: 0;
     )
   );
 

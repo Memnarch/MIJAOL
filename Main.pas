@@ -101,7 +101,6 @@ procedure TScreenForm.RenderTimerTimer(Sender: TObject);
 var
   i: Integer;
   LDummy: Single;
-  LLeftBlocked, LRightBlocked, LUpBlocked, LDownBlocked: Integer;
   LTopEdgeLeft, LTopEdgeRight, LLeftEdgeTop, LLeftEdgeBottom, LRightEdgeTop, LRightEdgeBottom, LBottomEdgeLeft, LBottomEdgeRight: Integer;
   LX, LY: Integer;
 begin
@@ -109,40 +108,52 @@ begin
   for i := Low(GEntity) to High(GEntity) do
   begin
     LDummy :=
-      //round current position to pixels
-        TInterlocked.Exchange(LX, Round(GEntity[i].X)) * 0
-      + TInterlocked.Exchange(LY, Round(GEntity[i].Y)) * 0
-      //collision checks
-      //static collision
-      //get collision values of edges of BoundingBox(Extended by 1 Pixel)
-      //TopEdge
-      + TInterlocked.Exchange(LTopEdgeLeft, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth, LY - CHalfSpriteHeight - 1])  * 0
-      + TInterlocked.Exchange(LTopEdgeRight, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth, LY - CHalfSpriteHeight - 1])  * 0
-      //LeftEdge
-      + TInterlocked.Exchange(LLeftEdgeTop, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth - 1, LY - CHalfSpriteHeight])  * 0
-      + TInterlocked.Exchange(LLeftEdgeBottom, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth - 1, LY + CHalfSpriteHeight - 1])  * 0
-      //RightEdge
-      + TInterlocked.Exchange(LRightEdgeTop, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth + 1, LY - CHalfSpriteHeight])  * 0
-      + TInterlocked.Exchange(LRightEdgeBottom, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth + 1, LY + CHalfSpriteHeight - 1])  * 0
-      //BottomEdge
-      + TInterlocked.Exchange(LBottomEdgeLeft, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth, LY + CHalfSpriteHeight + 1])  * 0
-      + TInterlocked.Exchange(LBottomEdgeRight, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth, LY + CHalfSpriteHeight + 1])  * 0
-      //combine 2 corners each edge to determine if walking into the given direction is possible
-      + TInterlocked.Exchange(LLeftBlocked,  LLeftEdgeTop + LLeftEdgeBottom) * 0
-      + TInterlocked.Exchange(LRightBlocked,  LRightEdgeTop + LRightEdgeBottom) * 0
-      + TInterlocked.Exchange(LUpBlocked,  LTopEdgeLeft + LTopEdgeRight) * 0
-      + TInterlocked.Exchange(LDownBlocked,  LBottomEdgeLeft + LBottomEdgeRight) * 0
       //get input
       + TInterlocked.Exchange(GEntity[i].Vel_X, (GetAsyncKeyState(VK_RIGHT) shr 31 and 1) - (GetAsyncKeyState(VK_LEFT) shr 31 and 1)) * 0
-//      + TInterlocked.Exchange(GEntity[i].Vel_Y, -10 * (GetAsyncKeyState(VK_SPACE) shr 31 and 1)) * 0
-      + Integer((LDownBlocked <> 0) and Boolean(Round(TInterlocked.Exchange(GEntity[i].Vel_Y, 8 * (GetAsyncKeyState(VK_SPACE) shr 31 and 1))))) * 0
+      + Integer((GENtity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_Y, 8 * (GetAsyncKeyState(VK_SPACE) shr 31 and 1))))) * 0
       //apply velocity
-      + Integer( (((LLeftBlocked = 0) and (GEntity[i].Vel_X < 0)) or ((LRightBlocked = 0) and (GEntity[i].Vel_X > 0))) and (TInterlocked.Exchange(GEntity[i].X, GEntity[i].X + GEntity[i].Vel_X) * 0 = 0))
+      + Integer( (((GENtity[0].LeftBlocked = 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked = 0) and (GEntity[i].Vel_X > 0))) and (TInterlocked.Exchange(GEntity[i].X, GEntity[i].X + GEntity[i].Vel_X) * 0 = 0))
       //apply gravity
       + TInterlocked.Exchange(GEntity[i].Vel_Y, Max(-6, GEntity[i].Vel_Y - 0.3)) * 0
-      + Integer( (((LDownBlocked = 0) and (GEntity[i].Vel_Y < 0)) or ((LUpBlocked = 0) and (GEntity[i].Vel_Y > 0))) and Boolean(Round(TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y - GEntity[i].Vel_Y)))) * 0;
+      + Integer( (((GEntity[i].DownBlocked = 0) and (GEntity[i].Vel_Y < 0)) or ((GENtity[i].UpBlocked = 0) and (GEntity[i].Vel_Y > 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y - GEntity[i].Vel_Y)))) * 0
+
+      //////Collisiooncode...loooong!
+        //Trunc current position to pixels
+        + TInterlocked.Exchange(LX, Trunc(GEntity[i].X)) * 0
+        + TInterlocked.Exchange(LY, Trunc(GEntity[i].Y)) * 0
+        //collision checks
+        //static collision
+        //get collision values of edges of BoundingBox(Extended by 1 Pixel)
+        //TopEdge
+        + TInterlocked.Exchange(LTopEdgeLeft, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth, LY - CHalfSpriteHeight - 1])  * 0
+        + TInterlocked.Exchange(LTopEdgeRight, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth, LY - CHalfSpriteHeight - 1])  * 0
+        //LeftEdge
+        + TInterlocked.Exchange(LLeftEdgeTop, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth - 1, LY - CHalfSpriteHeight])  * 0
+        + TInterlocked.Exchange(LLeftEdgeBottom, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth - 1, LY + CHalfSpriteHeight - 1])  * 0
+        //RightEdge
+        + TInterlocked.Exchange(LRightEdgeTop, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth + 1, LY - CHalfSpriteHeight])  * 0
+        + TInterlocked.Exchange(LRightEdgeBottom, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth + 1, LY + CHalfSpriteHeight - 1])  * 0
+        //BottomEdge
+        + TInterlocked.Exchange(LBottomEdgeLeft, FStaticCollision.Canvas.Pixels[LX - CHalfSpriteWidth, LY + CHalfSpriteHeight + 1])  * 0
+        + TInterlocked.Exchange(LBottomEdgeRight, FStaticCollision.Canvas.Pixels[LX + CHalfSpriteWidth, LY + CHalfSpriteHeight + 1])  * 0
+        //combine 2 corners each edge to determine if walking into the given direction is possible
+        + TInterlocked.Exchange(GEntity[i].LeftBlocked,  LLeftEdgeTop + LLeftEdgeBottom) * 0
+        + TInterlocked.Exchange(GEntity[i].RightBlocked,  LRightEdgeTop + LRightEdgeBottom) * 0
+        + TInterlocked.Exchange(GEntity[i].UpBlocked,  LTopEdgeLeft + LTopEdgeRight) * 0
+        + TInterlocked.Exchange(GEntity[i].DownBlocked,  LBottomEdgeLeft + LBottomEdgeRight) * 0
+      //end of collisioncode!!!
+
+      //positional correction in case we are inside an obstacle
+      + Integer( (GEntity[i].LeftBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].X, GEntity[i].X + 1)))) * 0
+      + Integer( (GEntity[i].RightBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].X, GEntity[i].X - 1)))) * 0
+      + Integer( (GEntity[i].UpBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y + 1)))) * 0
+      + Integer( (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, LY-1)))) * 0
+      //reset velocity when colliding do avoid reentering/overlapping the obstacle
+      + Integer( (((GEntity[i].LeftBlocked <> 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked <> 0) and (GEntity[i].Vel_X > 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_X, 0))))
+      + Integer( (((GEntity[i].UpBlocked <> 0) and (GEntity[i].Vel_Y > 0)) or ((GEntity[i].DownBlocked <> 0) and (GEntity[i].Vel_Y < 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_Y, 0))))
+        ;
     //Draw Entity
-    FBackBuffer.Canvas.Draw(Round(GEntity[i].X - CSpriteWidth div 2), Round(GEntity[i].Y - CSpriteWidth div 2), FSprites[GEntity[i].Sprite][0], 255);
+    FBackBuffer.Canvas.Draw(Trunc(GEntity[i].X - CSpriteWidth div 2), Trunc(GEntity[i].Y - CSpriteWidth div 2), FSprites[GEntity[i].Sprite][0], 255);
   end;
   Display.Repaint();
 end;
