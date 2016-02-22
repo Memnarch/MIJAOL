@@ -21,12 +21,15 @@ type
     //second dimension represents the states:
     //0 = stand, 1 = walk, 2 =  jump/InAir
     FSprites: array[0..0] of array[0..2] of TBitmap;
+    FFlippedSprites: array[0..0] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
     FScreenWidth: Integer;
     FScreenHeight: Integer;
+    FFrameCounter: Integer;
     procedure LoadSprites;
     procedure LoadSprite(AIndex: Integer; const AStand, AWalk, AJump: string);
+    procedure DrawRect(ATarget, ASource: TCanvas; AX, AY: Integer; ASRect: TRect);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -75,6 +78,19 @@ begin
   Display.Canvas.StretchDraw(Display.ClientRect, FBackBuffer);
 end;
 
+procedure TScreenForm.DrawRect(ATarget, ASource: TCanvas; AX, AY: Integer;
+  ASRect: TRect);
+var
+  LBlend: BLENDFUNCTION;
+begin
+  LBlend.BlendOp := AC_SRC_OVER;
+  LBlend.BlendFlags := 0;
+  LBlend.SourceConstantAlpha := 255;
+  LBlend.AlphaFormat := AC_SRC_ALPHA;
+  Winapi.Windows.AlphaBlend(ATarget.Handle, AX, AY, ASRect.Width, ASRect.Height,
+    ASource.Handle, ASRect.Left, ASRect.Top, ASRect.Width, ASRect.Height, LBlend)
+end;
+
 procedure TScreenForm.LoadSprite(AIndex: Integer; const AStand, AWalk,
   AJump: string);
 var
@@ -82,17 +98,31 @@ var
 begin
   LTemp := TPngImage.Create();
   try
-    FSprites[AIndex][0] := TBitmap.Create();
+
     LTemp.LoadFromFile(AStand);
+    FSprites[AIndex][0] := TBitmap.Create();
     FSprites[AIndex][0].Assign(LTemp);
+    FFlippedSprites[AIndex][0] := TBitmap.Create();
+    FFlippedSprites[AIndex][0].SetSize(LTemp.Width, LTemp.Height);
+    FFlippedSprites[AIndex][0].PixelFormat := pf32bit;
+    FFlippedSprites[AIndex][0].Canvas.CopyRect(Rect(FSprites[AIndex][0].Width, 0, -1, FSprites[AIndex][0].Height), FSprites[AIndex][0].Canvas, FSprites[AIndex][0].Canvas.ClipRect);
 
-    FSprites[AIndex][1] := TBitmap.Create();
     LTemp.LoadFromFile(AWalk);
+    FSprites[AIndex][1] := TBitmap.Create();
     FSprites[AIndex][1].Assign(LTemp);
+    FFlippedSprites[AIndex][1] := TBitmap.Create();
+    FFlippedSprites[AIndex][1].SetSize(LTemp.Width, LTemp.Height);
+    FFlippedSprites[AIndex][1].PixelFormat := pf32bit;
+    FFlippedSprites[AIndex][1].Canvas.CopyRect(Rect(FSprites[AIndex][1].Width, 0, -1, FSprites[AIndex][1].Height), FSprites[AIndex][1].Canvas, FSprites[AIndex][1].Canvas.ClipRect);
 
-    FSprites[AIndex][2] := TBitmap.Create();
     LTemp.LoadFromFile(AJump);
+    FSprites[AIndex][2] := TBitmap.Create();
     FSprites[AIndex][2].Assign(LTemp);
+    FFlippedSprites[AIndex][2] := TBitmap.Create();
+    FFlippedSprites[AIndex][2].SetSize(LTemp.Width, LTemp.Height);
+    FFlippedSprites[AIndex][2].PixelFormat := pf32bit;
+    FFlippedSprites[AIndex][2].Canvas.CopyRect(Rect(FSprites[AIndex][2].Width, 0, -1, FSprites[AIndex][2].Height), FSprites[AIndex][2].Canvas, FSprites[AIndex][2].Canvas.ClipRect);
+
   finally
     LTemp.Free;
   end;
@@ -100,11 +130,15 @@ end;
 
 procedure TScreenForm.LoadSprites;
 begin
-  LoadSprite(0, '..\..\Mario_Stand.png', '..\..\Mario_Stand.png', '..\..\Mario_Stand.png');
+  LoadSprite(0, '..\..\Mario_Stand.png', '..\..\Mario_Walk.png', '..\..\Mario_Jump.png');
 end;
 
 const
   CCameraDeadZone = 80;
+  CStand = 0;
+  CWalk = 1;
+  CJump = 2;
+  CGravity = 0.3;
 
 procedure TScreenForm.RenderTimerTimer(Sender: TObject);
 var
@@ -112,7 +146,12 @@ var
   LDummy: Single;
   LTopEdgeLeft, LTopEdgeRight, LLeftEdgeTop, LLeftEdgeBottom, LRightEdgeTop, LRightEdgeBottom, LBottomEdgeLeft, LBottomEdgeRight: Integer;
   LX, LY: Integer;
+  LRect: TRect;
+  LSprite: TBitmap;
+  LSpriteState, LSpriteFrame: Integer;
 begin
+  //Draw Level
+  FBackBuffer.Canvas.Draw(-FCamera_X,0, FLevel);
   for i := Low(GEntity) to High(GEntity) do
   begin
     LDummy :=
@@ -122,8 +161,13 @@ begin
       //apply velocity
       + Integer( (((GENtity[0].LeftBlocked = 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked = 0) and (GEntity[i].Vel_X > 0))) and (TInterlocked.Exchange(GEntity[i].X, GEntity[i].X + GEntity[i].Vel_X) * 0 = 0))
       //apply gravity
-      + TInterlocked.Exchange(GEntity[i].Vel_Y, Max(-5, GEntity[i].Vel_Y - 0.3)) * 0
-      + Integer( (((GEntity[i].DownBlocked = 0) and (GEntity[i].Vel_Y < 0)) or ((GENtity[i].UpBlocked = 0) and (GEntity[i].Vel_Y > 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y - GEntity[i].Vel_Y)))) * 0
+      + TInterlocked.Exchange(GEntity[i].Vel_Y, Max(-5, GEntity[i].Vel_Y - CGravity)) * 0
+      + Integer((((GEntity[i].DownBlocked = 0) and (GEntity[i].Vel_Y < 0)) or ((GENtity[i].UpBlocked = 0) and (GEntity[i].Vel_Y > 0))) and
+        Boolean(Trunc(
+          TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y - GEntity[i].Vel_Y)
+        + TInterlocked.Exchange(GEntity[i].InAirTimer, GEntity[i].InAirTimer + 1)
+        ))
+      )
 
       //////Collisiooncode...loooong!
         //Trunc current position to pixels
@@ -158,18 +202,37 @@ begin
       + Integer( (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, LY - 1)))) * 0
       //reset velocity when colliding do avoid reentering/overlapping the obstacle
       + Integer( (((GEntity[i].LeftBlocked <> 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked <> 0) and (GEntity[i].Vel_X > 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_X, 0))))
-      + Integer( (((GEntity[i].UpBlocked <> 0) and (GEntity[i].Vel_Y > 0)) or ((GEntity[i].DownBlocked <> 0) and (GEntity[i].Vel_Y < 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_Y, 0))))
+      + Integer( (((GEntity[i].UpBlocked <> 0) and (GEntity[i].Vel_Y > 0)) or ((GEntity[i].DownBlocked <> 0) and (GEntity[i].Vel_Y < 0)))
+          and Boolean(Trunc(
+            TInterlocked.Exchange(GEntity[i].Vel_Y, 0))
+          + TInterlocked.Exchange(GEntity[i].InAirTimer, 0)
+          )
+        )
       //camera movement
        + Integer((GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
-       + Integer((GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))));
-        ;
-
-    //Draw Level
-    FBackBuffer.Canvas.Draw(-FCamera_X,0, FLevel);
+       + Integer((GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))
+      //check our current state(standing, walking, Jumping/InAir)
+       + TInterlocked.Exchange(LSpriteState, CStand)
+       + Integer((GEntity[i].Vel_X <> 0) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CWalk))))
+       + Integer(((GEntity[i].DownBlocked = 0) and (GEntity[i].InAirTimer > 1)) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CJump))))
+      //check if we need to use a flipped version of our image or the normal one
+      + Integer(((GEntity[i].Vel_X < 0) and
+          Boolean(Trunc(
+            Integer(TInterlocked.Exchange<TBitmap>(LSprite, FFlippedSprites[GEntity[i].Sprite][LSpriteState])) * 0 + 1
+          ))) or
+          Boolean(Trunc(
+            Integer(TInterlocked.Exchange<TBitmap>(LSprite, FSprites[GEntity[i].Sprite][LSpriteState]))
+          ))
+        )
+      //Calculate current Frame of sprite to display
+      + TInterlocked.Exchange(LSpriteFrame, FFrameCounter div (50 div 10) mod (LSprite.Width div CSpriteWidth))
+      ;
     //Draw Entity
-    FBackBuffer.Canvas.Draw(Trunc(GEntity[i].X - CSpriteWidth div 2 - FCamera_X), Trunc(GEntity[i].Y - CSpriteWidth div 2), FSprites[GEntity[i].Sprite][0], 255);
+    DrawRect(FBackBUffer.Canvas, LSPrite.Canvas, Trunc(GEntity[i].X - CSpriteWidth div 2 - FCamera_X), Trunc(GEntity[i].Y - CSpriteWidth div 2 - FCamera_Y),
+      Rect(LSpriteFrame*CSpriteWidth, 0, LSpriteFrame*CSpriteWidth + CSpriteWidth, LSPrite.Height));
   end;
   Display.Repaint();
+  Inc(FFrameCounter);
 end;
 
 end.

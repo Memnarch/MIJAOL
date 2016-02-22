@@ -15,6 +15,7 @@ type
     RightBlocked: Integer;
     UpBlocked: Integer;
     DownBlocked: Integer;
+    InAirTimer: Integer;
   end;
 
 var
@@ -26,12 +27,6 @@ var
       Sprite: 0;
       X: 16;
       Y: 16;
-      Vel_X: 0;
-      Vel_Y: 0;
-      LeftBlocked: 0;
-      RightBlocked: 0;
-      UpBlocked: 0;
-      DownBlocked: 0;
     )
   );
 
