@@ -5,11 +5,11 @@ interface
 type
   TEntity = record
     Active: Boolean;
+    X: Single;
+    Y: Single;
     Input: Boolean;
     Live: Integer;
     Sprite: Integer;
-    X: Single;
-    Y: Single;
     Vel_X: Single;
     Vel_Y: Single;
     Gravity: Single;
@@ -25,19 +25,16 @@ var
   (
     (
       Active: True;
-      Input: True;
-      Live: 1;
-      Sprite: 0;
       X: 16;
       Y: 16;
-      Gravity: 1;
+      {$i Mario.ent}
     ),
 
     (
-      Live: 1;
-      Sprite: 1;
+      Active: True;
       X: 128;
       Y: 128;
+      {$i Block.ent}
     )
   );
 
