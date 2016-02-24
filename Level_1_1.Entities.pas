@@ -10,6 +10,7 @@ type
     Input: Boolean;
     Live: Integer;
     Sprite: Integer;
+    Dynamic: Integer;
     Vel_X: Single;
     Vel_Y: Single;
     Gravity: Single;
@@ -18,6 +19,8 @@ type
     UpBlocked: Integer;
     DownBlocked: Integer;
     InAirTimer: Integer;
+    bbWidth: Integer;
+    bbHeight: Integer;
   end;
 
 var

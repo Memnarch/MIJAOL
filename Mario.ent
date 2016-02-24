@@ -1,4 +1,7 @@
 Input: True;
 Live: 1;
 Sprite: 0;
+Dynamic: 1;
 Gravity: 1;
+bbWidth: 12;
+bbHeight: 16;
