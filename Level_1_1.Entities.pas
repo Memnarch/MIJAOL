@@ -10,7 +10,6 @@ type
     Input: Boolean;
     Live: Integer;
     Sprite: Integer;
-    Dynamic: Integer;
     Vel_X: Single;
     Vel_Y: Single;
     Gravity: Single;
@@ -28,15 +27,15 @@ var
   (
     (
       Active: True;
-      X: 16;
-      Y: 16;
+      X: 8;
+      Y: 192;
       {$i Mario.ent}
     ),
 
     (
       Active: True;
       X: 128;
-      Y: 128;
+      Y: 190;
       {$i Block.ent}
     )
   );
