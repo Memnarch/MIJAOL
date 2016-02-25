@@ -85,6 +85,7 @@ begin
   FDynamicCollision[True].Canvas.Pen.Color := CNoDynCollision;
   FDynamicCollision[True].Canvas.FillRect(FDynamicCollision[True].Canvas.ClipRect);
   ClientHeight := FBackBuffer.Height * 2;
+  ClientWidth := FBackBuffer.Width;
   LoadSprites();
   FScreenWidth := FBackBuffer.Width;
   FScreenHeight := FBackBuffer.Height;
@@ -94,9 +95,9 @@ procedure TScreenForm.DisplayPaint(Sender: TObject);
 begin
   Display.Canvas.CopyMode := SRCCOPY;
   Display.Canvas.StretchDraw(Rect(0, 0, Display.ClientWidth, Display.ClientHeight div 2), FBackBuffer);
-//  DrawRect(Display.Canvas, FStaticCollision.Canvas, -FCamera_X, -FCamera_Y, Rect(0, Display.ClientHeight div 3, Display.ClientWidth, Display.ClientHeight div 3 * 2));
+
   Display.Canvas.CopyRect(Rect(0, Display.ClientHeight div 2, Display.ClientWidth, Display.ClientHeight div 2 * 2),
-    FStaticCollision.Canvas, Rect(FCamera_X, FCamera_Y, FCamera_X + Display.ClientWidth, FStaticCollision.Height div 2));
+    FStaticCollision.Canvas, Rect(FCamera_X, FCamera_Y, FCamera_X + FBackBuffer.Width, FBackBuffer.Height));
 
   Display.Canvas.CopyMode := SRCINVERT;
    Display.Canvas.CopyRect(Rect(0, Display.ClientHeight div 2 * 1, Display.ClientWidth, Display.ClientHeight div 2 * 2),
