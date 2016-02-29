@@ -25,6 +25,8 @@ type
     FFlippedSprites: array[0..4] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
+    FNextCameraX: Integer;
+    FNextCameraY: Integer;
     FScreenWidth: Integer;
     FScreenHeight: Integer;
     FFrameCounter: Integer;
@@ -191,6 +193,8 @@ begin
   FDynamicCollision[not FCurrentDC].Canvas.Pen.Color := CNoDynCollision;
   FDynamicCollision[not FCurrentDC].Canvas.FillRect(FDynamicCollision[not FCurrentDC].Canvas.ClipRect);
   //Draw Level
+  FCamera_X := FNextCameraX;
+  FCamera_Y := FNextCameraY;
   FBackBuffer.Canvas.Draw(-FCamera_X,0, FLevel);
   for i := Low(GEntity) to High(GEntity) do
   begin
@@ -200,7 +204,7 @@ begin
         TInterlocked.Exchange(LTargetEnt, CNoDynCollision)
         //get input
         + Integer(GEntity[i].Input and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_X, 2*((GetAsyncKeyState(VK_RIGHT) shr 31 and 1) - (GetAsyncKeyState(VK_LEFT) shr 31 and 1))))))
-        + Integer(GEntity[i].Input and (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_Y, 7 * (GetAsyncKeyState(VK_SPACE) shr 31 and 1)))))
+        + Integer(GEntity[i].Input and (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_Y, 6.5 * (GetAsyncKeyState(VK_SPACE) shr 31 and 1)))))
         //apply velocity
         + Integer( (((GEntity[i].LeftBlocked = 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked = 0) and (GEntity[i].Vel_X > 0))) and (TInterlocked.Exchange(GEntity[i].X, GEntity[i].X + GEntity[i].Vel_X) * 0 = 0))
         //apply gravity
@@ -339,8 +343,8 @@ begin
           )))
         )))
         //camera movement
-         + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
-         + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))
+         + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
+         + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))
         //check our current state(standing, walking, Jumping/InAir)
          + TInterlocked.Exchange(LSpriteState, CStand)
          + Integer((GEntity[i].Vel_X <> 0) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CWalk))))
