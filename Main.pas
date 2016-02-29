@@ -21,8 +21,8 @@ type
     //first dimension is for different characters
     //second dimension represents the states:
     //0 = stand, 1 = walk, 2 =  jump/InAir
-    FSprites: array[0..2] of array[0..2] of TBitmap;
-    FFlippedSprites: array[0..2] of array[0..2] of TBitmap;
+    FSprites: array[0..4] of array[0..2] of TBitmap;
+    FFlippedSprites: array[0..4] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
     FScreenWidth: Integer;
@@ -159,6 +159,8 @@ begin
   LoadSprite(0, '..\..\Mario_Stand.png', '..\..\Mario_Walk.png', '..\..\Mario_Jump.png');
   LoadSprite(1, '..\..\Mario_Dead.png', '..\..\Mario_Dead.png', '..\..\Mario_Dead.png');
   LoadSprite(2, '..\..\Brick.png', '..\..\Brick.png', '..\..\Brick.png');
+  LoadSprite(3, '..\..\Gumba_Walk.png', '..\..\Gumba_Walk.png', '..\..\Gumba_Walk.png');
+  LoadSprite(4, '..\..\Gumba_Dead.png', '..\..\Gumba_Dead.png', '..\..\Gumba_Dead.png');
 end;
 
 const
@@ -193,6 +195,8 @@ begin
   begin
       //execute only if active
     if (GEntity[i].Active <> 0) and Boolean(Trunc(
+        //reset some values
+        TInterlocked.Exchange(LTargetEnt, CNoDynCollision)
         //get input
         + Integer(GEntity[i].Input and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_X, 2*((GetAsyncKeyState(VK_RIGHT) shr 31 and 1) - (GetAsyncKeyState(VK_LEFT) shr 31 and 1))))))
         + Integer(GEntity[i].Input and (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_Y, 7 * (GetAsyncKeyState(VK_SPACE) shr 31 and 1)))))
@@ -215,8 +219,8 @@ begin
           + TInterlocked.Exchange(LBBRight, LX + GEntity[i].bbWidth div 2 - 1)
           + TInterlocked.Exchange(LBBTop, LY - GEntity[i].bbHeight div 2)
           + TInterlocked.Exchange(LBBBottom, LY + GEntity[i].bbHeight div 2 - 1)
-          //do checks only if we do not ignore it!
-          + Integer(not (bfIgnoreCollision in GEntity[i].BehaviorFlags)
+          //do checks only if we are alive and do not ignore it!
+          + Integer(not (bfIgnoreCollision in GEntity[i].BehaviorFlags) and (GEntity[i].Live > 0)
             and Boolean(Trunc(
               //collision checks
               //static collision
@@ -278,14 +282,35 @@ begin
           ))
         + Integer( (GEntity[i].UpBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y + 1))))
         + Integer( (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, LY - 1))))
-        //reset velocity when colliding do avoid reentering/overlapping the obstacle
-        + Integer( (((GEntity[i].LeftBlocked <> 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked <> 0) and (GEntity[i].Vel_X > 0))) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Vel_X, 0))))
+        //reset gravity velocity when colliding to reset falling momentum
         + Integer( (((GEntity[i].UpBlocked <> 0) and (GEntity[i].Vel_Y > 0)) or ((GEntity[i].DownBlocked <> 0) and (GEntity[i].Vel_Y < 0)))
             and Boolean(Trunc(
               TInterlocked.Exchange(GEntity[i].Vel_Y, 0))
             + TInterlocked.Exchange(GEntity[i].InAirTimer, 0)
             )
           )
+        //if we collided with another entity, which is alive, attack and take damage!
+        + Integer((LTargetEnt <> CNoDynCollision) and (GEntity[LTargetEnt].Active <> 0) and Boolean(Trunc(
+          + Integer((LTargetEnt = LDynTop) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageTop)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageBottom)
+          )))
+
+          + Integer((LTargetEnt = LDynDown) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageBottom)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageTop)
+          )))
+
+          + Integer((LTargetEnt = LDynLeft) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageLeft)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageRight)
+          )))
+
+          + Integer((LTargetEnt = LDynRight) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageRight)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageLeft)
+          )))
+        )))
         //check DeadZone
         + Integer((GEntity[i].Y > CDeadZoneMin) and (GEntity[i].Y < CDeadZoneMax) and Boolean(
           + TInterlocked.Exchange(GEntity[i].Live, 0)

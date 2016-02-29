@@ -17,6 +17,8 @@ type
     Sprite: Integer;
     Vel_X: Single;
     Vel_Y: Single;
+    MotorX: Integer;
+    MotorY: Integer;
     Gravity: Single;
     LeftBlocked: Integer;
     RightBlocked: Integer;
@@ -25,13 +27,17 @@ type
     InAirTimer: Integer;
     bbWidth: Integer;
     bbHeight: Integer;
+    DamageLeft: Integer;
+    DamageRight: Integer;
+    DamageTop: Integer;
+    DamageBottom: Integer;
     ReplaceOnDead: Integer;
     SpawnFlags: TSpawnFlags;
     BehaviorFlags: TBehaviorFlags;
   end;
 
 var
-  GEntity: array[0..2] of TEntity =
+  GEntity: array[0..3] of TEntity =
   (
     (
       Active: 1;
@@ -42,9 +48,9 @@ var
 
     (
       Active: 1;
-      X: 128;
+      X: 240;
       Y: 190;
-      {$i Block.ent}
+      {$i Gumba.ent}
     )
   );
 
