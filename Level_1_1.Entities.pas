@@ -14,11 +14,10 @@ type
     Y: Single;
     Input: Boolean;
     Live: Integer;
+    LiveTime: Integer;
     Sprite: Integer;
     Vel_X: Single;
     Vel_Y: Single;
-    MotorX: Integer;
-    MotorY: Integer;
     Gravity: Single;
     LeftBlocked: Integer;
     RightBlocked: Integer;

@@ -330,6 +330,13 @@ begin
             )))
           )))
         )))
+        //LiveTimeCheck
+        + Integer((GEntity[i].Active <> 0) and Boolean(Trunc(
+            TInterlocked.Add(GEntity[i].LiveTime, -1)
+          + Integer((GEntity[i].LiveTime = 0) and Boolean(Trunc(
+              TInterlocked.Exchange(GEntity[i].Active, 0)
+          )))
+        )))
         //camera movement
          + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
          + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FCamera_X, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))

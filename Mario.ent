@@ -10,6 +10,7 @@ ReplaceOnDead: 1;
 ),
 (
 Live: 99999;
+LiveTime: 100;
 Sprite: 1;
 Vel_Y: 8;
 Gravity: 1;
