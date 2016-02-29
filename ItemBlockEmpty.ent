@@ -1,0 +1,5 @@
+Live: 1000;
+Sprite: 6;
+bbWidth: 16;
+bbHeight: 16;
+BehaviorFlags: [bfIgnoreCollision];

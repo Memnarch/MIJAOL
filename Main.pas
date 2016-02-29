@@ -21,8 +21,8 @@ type
     //first dimension is for different characters
     //second dimension represents the states:
     //0 = stand, 1 = walk, 2 =  jump/InAir
-    FSprites: array[0..4] of array[0..2] of TBitmap;
-    FFlippedSprites: array[0..4] of array[0..2] of TBitmap;
+    FSprites: array[0..7] of array[0..2] of TBitmap;
+    FFlippedSprites: array[0..7] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
     FNextCameraX: Integer;
@@ -163,6 +163,9 @@ begin
   LoadSprite(2, '..\..\Brick.png', '..\..\Brick.png', '..\..\Brick.png');
   LoadSprite(3, '..\..\Gumba_Walk.png', '..\..\Gumba_Walk.png', '..\..\Gumba_Walk.png');
   LoadSprite(4, '..\..\Gumba_Dead.png', '..\..\Gumba_Dead.png', '..\..\Gumba_Dead.png');
+  LoadSprite(5, '..\..\ItemBlock.png', '..\..\ItemBlock.png', '..\..\ItemBlock.png');
+  LoadSprite(6, '..\..\ItemBlock_Empty.png', '..\..\ItemBlock_Empty.png', '..\..\ItemBlock_Empty.png');
+  LoadSprite(7, '..\..\Coin_Spinning.png', '..\..\Coin_Spinning.png', '..\..\Coin_Spinning.png');
 end;
 
 const
@@ -297,23 +300,23 @@ begin
         //if we collided with another entity, which is alive, attack and take damage!
         + Integer((LTargetEnt <> CNoDynCollision) and (GEntity[LTargetEnt].Active <> 0) and Boolean(Trunc(
           + Integer((LTargetEnt = LDynTop) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
-              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageTop)
-            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageBottom)
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageTop*GEntity[LTargetEnt].VulnerableBottom)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageBottom*GEntity[i].VulnerableTop)
           )))
 
           + Integer((LTargetEnt = LDynDown) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
-              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageBottom)
-            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageTop)
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageBottom*GEntity[LTargetEnt].VulnerableTop)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageTop*GEntity[i].VulnerableBottom)
           )))
 
           + Integer((LTargetEnt = LDynLeft) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
-              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageLeft)
-            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageRight)
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageLeft*GEntity[LTargetEnt].VulnerableRight)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageRight*GEntity[i].VulnerableLeft)
           )))
 
           + Integer((LTargetEnt = LDynRight) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
-              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageRight)
-            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageLeft)
+              TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageRight*GEntity[LTargetEnt].VulnerableLeft)
+            + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageLeft*GEntity[i].VulnerableRight)
           )))
         )))
         //check DeadZone

@@ -6,10 +6,12 @@ bbWidth: 12;
 bbHeight: 16;
 DamageTop: 1;
 DamageBottom: 1;
+VulnerableLeft: 1;
+VulnerableRight: 1;
+VulnerableTop: 1;
 ReplaceOnDead: 1;
 ),
 (
-Live: 99999;
 LiveTime: 100;
 Sprite: 1;
 Vel_Y: 8;

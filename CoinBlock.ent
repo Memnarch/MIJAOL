@@ -1,0 +1,15 @@
+Live: 1;
+Sprite: 5;
+bbWidth: 16;
+bbHeight: 16;
+VulnerableBottom: 1;
+ReplaceOnDead: 1;
+BehaviorFlags: [bfIgnoreCollision];
+),
+(
+Live: 1000;
+LiveTime: 5;
+Sprite: 7;
+Vel_Y: 5;
+SpawnFlags: [sfCopyPosition];
+BehaviorFlags: [bfIgnoreCollision];

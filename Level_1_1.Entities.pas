@@ -30,13 +30,20 @@ type
     DamageRight: Integer;
     DamageTop: Integer;
     DamageBottom: Integer;
+    VulnerableLeft: Integer;
+    VulnerableRight: Integer;
+    VulnerableTop: Integer;
+    VulnerableBottom: Integer;
     ReplaceOnDead: Integer;
     SpawnFlags: TSpawnFlags;
     BehaviorFlags: TBehaviorFlags;
   end;
 
+const
+  CBottom = 0;
+
 var
-  GEntity: array[0..3] of TEntity =
+  GEntity: array[0..16] of TEntity =
   (
     (
       Active: 1;
@@ -44,13 +51,88 @@ var
       Y: 192;
       {$i Mario.ent}
     ),
+    //First Blockgroup
+    //       ?
+    //
+    //
+    //
+    // ?   #?#?#
+    //
+    //
+    //
+    ////////////////////
+    (
+      Active: 1;
+      X: 264;
+      Y: 160;
+      {$i ItemBlockEmpty.ent}
+    ),
+    (
+      Active: 1;
+      X: 264;
+      Y: 160;
+      {$i CoinBlock.ent}
+    ),
+    (
+      Active: 1;
+      X: 328;
+      Y: 160;
+      {$i Block.ent}
+    ),
 
     (
       Active: 1;
-      X: 240;
-      Y: 190;
-      {$i Gumba.ent}
+      X: 344;
+      Y: 160;
+      {$i ItemBlockEmpty.ent}
+    ),
+    (
+      Active: 1;
+      X: 344;
+      Y: 160;
+      {$i CoinBlock.ent}
+    ),
+
+    (
+      Active: 1;
+      X: 360;
+      Y: 160;
+      {$i Block.ent}
+    ),
+
+    (
+      Active: 1;
+      X: 376;
+      Y: 160;
+      {$i ItemBlockEmpty.ent}
+    ),
+    (
+      Active: 1;
+      X: 376;
+      Y: 160;
+      {$i CoinBlock.ent}
+    ),
+
+    (
+      Active: 1;
+      X: 392;
+      Y: 160;
+      {$i Block.ent}
+    ),
+
+    (
+      Active: 1;
+      X: 360;
+      Y: 96;
+      {$i ItemBlockEmpty.ent}
+    ),
+    (
+      Active: 1;
+      X: 360;
+      Y: 96;
+      {$i CoinBlock.ent}
     )
+    //Endof first Blockgroup
   );
 
 implementation
