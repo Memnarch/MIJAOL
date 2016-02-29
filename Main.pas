@@ -165,6 +165,7 @@ end;
 
 const
   CCameraDeadZone = 80;
+  CActivityBorder = 40;
   CStand = 0;
   CWalk = 1;
   CJump = 2;
@@ -193,8 +194,8 @@ begin
   FBackBuffer.Canvas.Draw(-FCamera_X,0, FLevel);
   for i := Low(GEntity) to High(GEntity) do
   begin
-      //execute only if active
-    if (GEntity[i].Active <> 0) and Boolean(Trunc(
+      //execute only if active and near to the camera
+    if (GEntity[i].Active <> 0) and ((GEntity[i].X - FCamera_X) >= -CActivityBorder) and ((GEntity[i].X - FCamera_X) < FScreenWidth + CActivityBorder) and Boolean(Trunc(
         //reset some values
         TInterlocked.Exchange(LTargetEnt, CNoDynCollision)
         //get input
