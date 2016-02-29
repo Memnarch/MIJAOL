@@ -3,8 +3,13 @@ unit Level_1_1.Entities;
 interface
 
 type
+  TSpawnFlag = (sfCopyPosition);
+  TSpawnFlags = set of TSpawnFlag;
+  TBehaviorFlag = (bfIgnoreCollision);
+  TBehaviorFlags = set of TBehaviorFlag;
+
   TEntity = record
-    Active: Boolean;
+    Active: Integer;
     X: Single;
     Y: Single;
     Input: Boolean;
@@ -20,20 +25,23 @@ type
     InAirTimer: Integer;
     bbWidth: Integer;
     bbHeight: Integer;
+    ReplaceOnDead: Integer;
+    SpawnFlags: TSpawnFlags;
+    BehaviorFlags: TBehaviorFlags;
   end;
 
 var
-  GEntity: array[0..1] of TEntity =
+  GEntity: array[0..2] of TEntity =
   (
     (
-      Active: True;
+      Active: 1;
       X: 8;
       Y: 192;
       {$i Mario.ent}
     ),
 
     (
-      Active: True;
+      Active: 1;
       X: 128;
       Y: 190;
       {$i Block.ent}
