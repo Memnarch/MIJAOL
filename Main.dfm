@@ -1,11 +1,10 @@
 object ScreenForm: TScreenForm
   Left = 0
   Top = 0
-  BorderStyle = bsSingle
-  Caption = 'ScreenForm'
-  ClientHeight = 240
-  ClientWidth = 256
-  Color = clBtnFace
+  Caption = 'MIJAOL'
+  ClientHeight = 230
+  ClientWidth = 246
+  Color = clNone
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,13 +12,16 @@ object ScreenForm: TScreenForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
+  OnKeyDown = FormKeyDown
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object Display: TPaintBox
     Left = 0
     Top = 0
-    Width = 256
-    Height = 240
+    Width = 246
+    Height = 230
     Align = alClient
     OnPaint = DisplayPaint
     ExplicitLeft = 232

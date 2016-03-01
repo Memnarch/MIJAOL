@@ -12,6 +12,8 @@ type
     Display: TPaintBox;
     procedure DisplayPaint(Sender: TObject);
     procedure RenderTimerTimer(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     FBackBuffer: TBitmap;
@@ -31,12 +33,17 @@ type
     FScreenHeight: Integer;
     FFrameCounter: Integer;
     FCurrentDC: Boolean;
+    FTargetDimensions: TRect;
+    FNumActiveScreens: Integer;
+    FOldDimension: TRect;
+    FOldStyle: TBorderStyle;
     procedure LoadSprites;
     procedure LoadSprite(AIndex: Integer; const AStand, AWalk, AJump: string);
     procedure DrawRect(ATarget, ASource: TCanvas; AX, AY: Integer; ASRect: TRect);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
+    procedure ToggleFullScreen;
   end;
 
 var
@@ -56,6 +63,8 @@ const
   CHalfSpriteWidth = 8;
   CHalfSpriteHeight = 8;
   CNoDynCollision = clWhite;
+  CResolutionX = 256;
+  CResolutionY = 240;
 
 {$R *.dfm}
 
@@ -86,7 +95,8 @@ begin
   FDynamicCollision[True].Canvas.Brush.Color := CNoDynCollision;
   FDynamicCollision[True].Canvas.Pen.Color := CNoDynCollision;
   FDynamicCollision[True].Canvas.FillRect(FDynamicCollision[True].Canvas.ClipRect);
-  ClientHeight := FBackBuffer.Height * 2;
+  FNumActiveScreens := 1;
+  ClientHeight := FBackBuffer.Height * FNumActiveScreens;
   ClientWidth := FBackBuffer.Width;
   LoadSprites();
   FScreenWidth := FBackBuffer.Width;
@@ -94,16 +104,24 @@ begin
 end;
 
 procedure TScreenForm.DisplayPaint(Sender: TObject);
+var
+  LSecondTarget: TRect;
 begin
   Display.Canvas.CopyMode := SRCCOPY;
-  Display.Canvas.StretchDraw(Rect(0, 0, Display.ClientWidth, Display.ClientHeight div 2), FBackBuffer);
+  Display.Canvas.StretchDraw(FTargetDimensions, FBackBuffer);
+  if FNumActiveScreens > 1 then
+  begin
+    LSecondTarget.Top := FTargetDimensions.Height;
+    LSecondTarget.Bottom := LSecondTarget.Top + LSecondTarget.Top;
+    LSecondTarget.Left := FTargetDimensions.Left;
+    LSecondTarget.Right := LSecondTarget.Left + FTargetDimensions.Width;
+    Display.Canvas.CopyRect(LSecondTarget,
+      FStaticCollision.Canvas, Rect(FCamera_X, FCamera_Y, FCamera_X + FBackBuffer.Width, FBackBuffer.Height));
 
-  Display.Canvas.CopyRect(Rect(0, Display.ClientHeight div 2, Display.ClientWidth, Display.ClientHeight div 2 * 2),
-    FStaticCollision.Canvas, Rect(FCamera_X, FCamera_Y, FCamera_X + FBackBuffer.Width, FBackBuffer.Height));
-
-  Display.Canvas.CopyMode := SRCINVERT;
-   Display.Canvas.CopyRect(Rect(0, Display.ClientHeight div 2 * 1, Display.ClientWidth, Display.ClientHeight div 2 * 2),
-    FDynamicCollision[not FCurrentDC].Canvas, Rect(FCamera_X, FCamera_Y, FCamera_X + FBackBuffer.Width, FBackBuffer.Height));
+    Display.Canvas.CopyMode := SRCINVERT;
+     Display.Canvas.CopyRect(LSecondTarget,
+      FDynamicCollision[not FCurrentDC].Canvas, Rect(FCamera_X, FCamera_Y, FCamera_X + FBackBuffer.Width, FBackBuffer.Height));
+  end;
 end;
 
 procedure TScreenForm.DrawRect(ATarget, ASource: TCanvas; AX, AY: Integer;
@@ -117,6 +135,66 @@ begin
   LBlend.AlphaFormat := AC_SRC_ALPHA;
   Winapi.Windows.AlphaBlend(ATarget.Handle, AX, AY, ASRect.Width, ASRect.Height,
     ASource.Handle, ASRect.Left, ASRect.Top, ASRect.Width, ASRect.Height, LBlend)
+end;
+
+procedure TScreenForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (Shift = [ssAlt]) then
+    ToggleFullScreen();
+
+  if Key = VK_F1 then
+  begin
+    if FNumActiveScreens = 1 then
+      FNumActiveScreens := 2
+    else
+      FNumActiveScreens := 1;
+    FormResize(Self);
+  end;
+
+end;
+
+procedure TScreenForm.FormResize(Sender: TObject);
+var
+  LWidth, LHeight: Integer;
+begin
+  if (ClientHeight div FNumActiveScreens) < ClientWidth then
+  begin
+    LHeight := ClientHeight div FNumActiveScreens;
+    LWidth := Trunc(LHeight / CResolutionY * CResolutionX);
+  end
+  else
+  begin
+    LWidth := ClientWidth;
+    LHeight := Trunc(LWidth / CResolutionX * CResolutionY);
+  end;
+  FTargetDimensions.Left := (ClientWidth - LWidth) div 2;
+  FTargetDimensions.Top := 0;
+  FTargetDimensions.Right := FTargetDimensions.Left + LWidth;
+  FTargetDimensions.Bottom := FTargetDimensions.Top + LHeight;
+end;
+
+procedure TScreenForm.ToggleFullScreen;
+begin
+  if BorderStyle <> bsNone then
+  begin
+    FOldStyle := BorderStyle;
+    FOldDimension.Location := Point(Left, Top);
+    FOldDimension.Size := TSize.Create(ClientWidth, ClientHeight);
+    BorderStyle := bsNone;
+    Left := 0;
+    Top := 0;
+    Width := Screen.Width;
+    Height := Screen.Height;
+  end
+  else
+  begin
+    BorderStyle := FOldStyle;
+    Left := FOldDimension.Left;
+    Top := FOldDimension.Top;
+    ClientWidth := FOldDimension.Width;
+    ClientHeight := FOldDimension.Height;
+  end;
 end;
 
 procedure TScreenForm.LoadSprite(AIndex: Integer; const AStand, AWalk,
