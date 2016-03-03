@@ -1,0 +1,71 @@
+Live: 1;
+Sprite: 8;
+Vel_X: -1;
+Gravity: 1;
+bbWidth: 16;
+bbHeight: 16;
+DamageLeft: 1;
+DamageRight: 1;
+DamageBottom: 1;
+VulnerableTop: 1;
+ReplaceOnDead: 1;
+),
+(
+Live: 1;
+Sprite: 9;
+Gravity: 1;
+bbWidth: 16;
+bbHeight: 16;
+VulnerableTop: 1;
+ReplaceOnDead: 1;
+SpawnFlags: [sfCopyPosition];
+),
+(
+//moving shell which wont damage us but enemies
+Team: 1;
+Live: 1;
+LiveTime: 30;
+Sprite: 9;
+Vel_X: 3;
+Gravity: 1;
+bbWidth: 16;
+bbHeight: 16;
+DamageLeft: 1;
+DamageRight: 1;
+DamageBottom: 1;
+VulnerableLeft: 1;
+VulnerableRight: 1;
+VulnerableTop: 1;
+VulnerableBottom: 1;
+ReplaceOnDead: 2; //if we hit something just die
+ReplaceOnTimeOut: 1; //if we haven't hit anything on timeout, replace with shell which damages all(including mario)
+SpawnFlags: [sfCopyPosition];
+),
+(
+//moving shell which damages everyone!
+Team: 3;
+Live: 1;
+Sprite: 9;
+Vel_X: 3;
+Gravity: 1;
+bbWidth: 16;
+bbHeight: 16;
+DamageLeft: 1;
+DamageRight: 1;
+DamageBottom: 1;
+VulnerableLeft: 1;
+VulnerableRight: 1;
+VulnerableTop: 1;
+VulnerableBottom: 1;
+ReplaceOnDead: 1;
+SpawnFlags: [sfCopyPosition];
+),
+(
+Live: 1;
+LiveTime: 100;
+Sprite: 9;
+Gravity: 1;
+bbWidth: 16;
+bbHeight: 16;
+SpawnFlags: [sfCopyPosition];
+BehaviorFlags: [bfIgnoreCollision];

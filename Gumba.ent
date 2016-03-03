@@ -7,10 +7,13 @@ bbHeight: 16;
 DamageLeft: 1;
 DamageRight: 1;
 DamageBottom: 1;
+VulnerableLeft: 1;
+VulnerableRight: 1;
 VulnerableTop: 1;
 ReplaceOnDead: 1;
 ),
 (
+Live: 1;
 LiveTime: 100;
 Sprite: 4;
 Gravity: 1;

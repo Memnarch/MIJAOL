@@ -23,8 +23,8 @@ type
     //first dimension is for different characters
     //second dimension represents the states:
     //0 = stand, 1 = walk, 2 =  jump/InAir
-    FSprites: array[0..7] of array[0..2] of TBitmap;
-    FFlippedSprites: array[0..7] of array[0..2] of TBitmap;
+    FSprites: array[0..9] of array[0..2] of TBitmap;
+    FFlippedSprites: array[0..9] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
     FNextCameraX: Integer;
@@ -244,6 +244,8 @@ begin
   LoadSprite(5, '..\..\ItemBlock.png', '..\..\ItemBlock.png', '..\..\ItemBlock.png');
   LoadSprite(6, '..\..\ItemBlock_Empty.png', '..\..\ItemBlock_Empty.png', '..\..\ItemBlock_Empty.png');
   LoadSprite(7, '..\..\Coin_Spinning.png', '..\..\Coin_Spinning.png', '..\..\Coin_Spinning.png');
+  LoadSprite(8, '..\..\Koopa_Walk.png', '..\..\Koopa_Walk.png', '..\..\Koopa_Walk.png');
+  LoadSprite(9, '..\..\Koopa_Shell.png', '..\..\Koopa_Shell.png', '..\..\Koopa_Shell.png');
 end;
 
 const
@@ -375,8 +377,13 @@ begin
             + TInterlocked.Exchange(GEntity[i].InAirTimer, 0)
             )
           )
-        //if we collided with another entity, which is alive, attack and take damage!
-        + Integer((LTargetEnt <> CNoDynCollision) and (GEntity[LTargetEnt].Active <> 0) and Boolean(Trunc(
+        + TInterlocked.Increment(GEntity[i].LastColliderTime)
+        //if we collided with another entity(which we didn collide with in the last frame), which is alive and not in our team, attack and take damage!
+        + Integer((LTargetEnt <> CNoDynCollision) and (GEntity[LTargetEnt].Active <> 0) and (GEntity[LTargetEnt].Team <> GEntity[i].Team)
+            and (((GEntity[i].LastCollider <> LTargetEnt) and (GEntity[LTargetEnt].LastCollider <> i))
+                or ((GEntity[i].LastColliderTime > 5) and (GEntity[LTargetEnt].LastColliderTime > 5))
+              )
+          and Boolean(Trunc(
           + Integer((LTargetEnt = LDynTop) and (GEntity[LTargetEnt].Live > 0) and Boolean(Trunc(
               TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageTop*GEntity[LTargetEnt].VulnerableBottom)
             + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageBottom*GEntity[i].VulnerableTop)
@@ -396,33 +403,42 @@ begin
               TInterlocked.Add(GEntity[LTargetEnt].Live, -GEntity[i].DamageRight*GEntity[LTargetEnt].VulnerableLeft)
             + TInterlocked.Add(GEntity[i].Live, -GEntity[LTargetEnt].DamageLeft*GEntity[i].VulnerableRight)
           )))
+          //store us as lastcollider in targetent so it does not interact with us on next frame
+          + TInterlocked.Exchange(GEntity[LTargetEnt].LastCollider, i)
+          + TInterlocked.Exchange(GEntity[LTargetEnt].LastColliderTime, 0)
+          + TInterlocked.Exchange(GEntity[i].LastCollider, LTargetEnt)
+          + TInterlocked.Exchange(GEntity[i].LastColliderTime, 0)
         )))
         //check DeadZone
         + Integer((GEntity[i].Y > CDeadZoneMin) and (GEntity[i].Y < CDeadZoneMax) and Boolean(
           + TInterlocked.Exchange(GEntity[i].Live, 0)
         ))
-
+        + TInterlocked.Add(GEntity[i].LiveTime, -1)
         //check if we died and take actions if this is true
-        + Integer((GEntity[i].Live < 1) and Boolean(Trunc(
+        + Integer(((GEntity[i].Live < 1) or (GEntity[i].LiveTime = 0)) and Boolean(Trunc(
+            Integer((GEntity[i].LiveTime = 0) and Boolean(TInterlocked.Exchange(LNextEntity, GEntity[i].ReplaceOnTimeOut)))
+          + Integer((GEntity[i].Live < 1) and Boolean(TInterlocked.Exchange(LNextEntity, GEntity[i].ReplaceOnDead)))
           //deactivate us so we are removed next frame
           + TInterlocked.Exchange(GEntity[i].Active, 0)
           //replace with entity if specified
-          + Integer((GEntity[i].ReplaceOnDead > 0) and Boolean(Trunc(
-            + TInterlocked.Exchange(LNextEntity, i + GEntity[i].ReplaceOnDead)
+          + Integer((LNextEntity > 0) and Boolean(Trunc(
+            + TInterlocked.Exchange(LNextEntity, i + LNextEntity)
             + TInterlocked.Exchange(GEntity[LNextEntity].Active, 1)
+            + TInterlocked.Exchange(GEntity[LNextEntity].LastCollider, GEntity[i].LastCollider)
+//            + TInterlocked.Exchange()
             + Integer((sfCopyPosition in GEntity[LNextEntity].SpawnFlags) and Boolean(Trunc(
               + TInterlocked.Exchange(GEntity[LNextEntity].X, GEntity[i].X)
               + TInterlocked.Exchange(GEntity[LNextEntity].Y, GEntity[i].Y)
             )))
           )))
         )))
-        //LiveTimeCheck
-        + Integer((GEntity[i].Active <> 0) and Boolean(Trunc(
-            TInterlocked.Add(GEntity[i].LiveTime, -1)
-          + Integer((GEntity[i].LiveTime = 0) and Boolean(Trunc(
-              TInterlocked.Exchange(GEntity[i].Active, 0)
-          )))
-        )))
+//        //LiveTimeCheck
+//        + Integer((GEntity[i].Active <> 0) and Boolean(Trunc(
+//            TInterlocked.Add(GEntity[i].LiveTime, -1)
+//          + Integer((GEntity[i].LiveTime = 0) and Boolean(Trunc(
+//              TInterlocked.Exchange(GEntity[i].Active, 0)
+//          )))
+//        )))
         //camera movement
          + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
          + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))
@@ -442,8 +458,8 @@ begin
         //Calculate current Frame of sprite to display
         + TInterlocked.Exchange(LSpriteFrame, FFrameCounter div (50 div 16) mod (LSprite.Width div CSpriteWidth))
         //Translate EntityPosition
-        + TInterlocked.Exchange(LX, Trunc(GEntity[i].X - CSpriteWidth div 2 - FCamera_X))
-        + TInterlocked.Exchange(LY, Trunc(GEntity[i].Y - CSpriteWidth div 2 - FCamera_Y))
+        + TInterlocked.Exchange(LX, Trunc(GEntity[i].X - CHalfSpriteWidth - FCamera_X))
+        + TInterlocked.Exchange(LY, Trunc(GEntity[i].Y - LSprite.Height + CHalfSpriteHeight - FCamera_Y))
         //recalculate the BB area
         + TInterlocked.Exchange(LBBLeft, Trunc(GEntity[i].X) - GEntity[i].bbWidth div 2)
         + TInterlocked.Exchange(LBBRight, Trunc(GEntity[i].X) + GEntity[i].bbWidth div 2)

@@ -13,6 +13,7 @@ type
     X: Single;
     Y: Single;
     Input: Boolean;
+    Team: Integer;
     Live: Integer;
     LiveTime: Integer;
     Sprite: Integer;
@@ -35,20 +36,23 @@ type
     VulnerableTop: Integer;
     VulnerableBottom: Integer;
     ReplaceOnDead: Integer;
+    ReplaceOnTimeOut: Integer;
     SpawnFlags: TSpawnFlags;
     BehaviorFlags: TBehaviorFlags;
+    LastCollider: Integer;
+    LastColliderTime: Integer;
   end;
 
 const
   CBottom = 0;
 
 var
-  GEntity: array[0..70] of TEntity =
+  GEntity: array[0..91] of TEntity =
   (
     (
       Active: 1;
       X: 8;
-      Y: 192;
+      Y: 208;
       {$i Mario.ent}
     ),
     //First Blockgroup
@@ -447,8 +451,67 @@ var
       X: 2744;
       Y: 160;
       {$i Block.ent}
-    )
+    ),
     //end of fifth blockgroup
+    //enemies of first blockgroup
+    (
+      Active: 1;
+      X: 360;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    //enemies in first pipe section
+    (
+      Active: 1;
+      X: 680;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    //enemies in second pipe section
+    (
+      Active: 1;
+      X: 824;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 856;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    //enemies of second blockgroup
+    (
+      Active: 1;
+      X: 1288;
+      Y: 80;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 1320;
+      Y: 80;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 1560;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 1592;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 1752;
+      Y: 208;
+      {$i Koopa.ent}
+    )
+
   );
 
 implementation

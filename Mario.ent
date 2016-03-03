@@ -1,4 +1,5 @@
 Input: True;
+Team: 1;
 Live: 1;
 Sprite: 0;
 Gravity: 1;
@@ -12,6 +13,7 @@ VulnerableTop: 1;
 ReplaceOnDead: 1;
 ),
 (
+Live: 1;
 LiveTime: 100;
 Sprite: 1;
 Vel_Y: 8;
