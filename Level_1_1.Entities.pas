@@ -47,7 +47,7 @@ const
   CBottom = 0;
 
 var
-  GEntity: array[0..91] of TEntity =
+  GEntity: array[0..107] of TEntity =
   (
     (
       Active: 1;
@@ -510,8 +510,57 @@ var
       X: 1752;
       Y: 208;
       {$i Koopa.ent}
+    ),
+    //enemies of fourth blockgroup
+    (
+      Active: 1;
+      X: 1896;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 1928;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 2008;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 2040;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 2088;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 2120;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    //enemies of fifth blockgroup
+    (
+      Active: 1;
+      X: 2808;
+      Y: 208;
+      {$i Gumba.ent}
+    ),
+    (
+      Active: 1;
+      X: 2840;
+      Y: 208;
+      {$i Gumba.ent}
     )
-
   );
 
 implementation
