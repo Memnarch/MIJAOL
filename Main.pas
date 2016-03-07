@@ -23,8 +23,8 @@ type
     //first dimension is for different characters
     //second dimension represents the states:
     //0 = stand, 1 = walk, 2 =  jump/InAir
-    FSprites: array[0..9] of array[0..2] of TBitmap;
-    FFlippedSprites: array[0..9] of array[0..2] of TBitmap;
+    FSprites: array[0..10] of array[0..2] of TBitmap;
+    FFlippedSprites: array[0..10] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
     FNextCameraX: Integer;
@@ -240,6 +240,7 @@ begin
   LoadSprite(7, ['Coin_Spinning.png']);
   LoadSprite(8, ['Koopa_Walk.png']);
   LoadSprite(9, ['Koopa_Shell.png']);
+  LoadSprite(10, ['GameOver.png']);
 end;
 
 const
@@ -261,7 +262,7 @@ var
   LX, LY: Integer;
   LRect: TRect;
   LSprite: TBitmap;
-  LSpriteState, LSpriteFrame: Integer;
+  LSpriteState, LSpriteFrame, LFrameCount, LFrameWidth: Integer;
   LDynLeft, LDynRight, LDynTop, LDynDown, LTargetEnt, LNextEntity: Integer;
   LBBLeft, LBBRight, LBBTop, LBBBottom: Integer;
 begin
@@ -272,11 +273,11 @@ begin
   //Draw Level
   FCamera_X := FNextCameraX;
   FCamera_Y := FNextCameraY;
-  FBackBuffer.Canvas.Draw(-FCamera_X,0, FLevel);
+  FBackBuffer.Canvas.Draw(-FCamera_X, -FCamera_Y, FLevel);
   for i := Low(GEntity) to High(GEntity) do
   begin
       //execute only if active and has input or is near to the camera
-    if (GEntity[i].Active <> 0) and (GEntity[i].Input or (((GEntity[i].X - FCamera_X) >= -CActivityBorder) and ((GEntity[i].X - FCamera_X) < FScreenWidth + CActivityBorder))) and Boolean(Trunc(
+    if (GEntity[i].Active <> 0) and (GEntity[i].Input or (bfAlwaysUpdate in GEntity[i].BehaviorFlags) or (((GEntity[i].X - FCamera_X) >= -CActivityBorder) and ((GEntity[i].X - FCamera_X) < FScreenWidth + CActivityBorder))) and Boolean(Trunc(
         //reset some values
         TInterlocked.Exchange(LTargetEnt, CNoDynCollision)
         //get input
@@ -407,6 +408,15 @@ begin
         + Integer((GEntity[i].Y > CDeadZoneMin) and (GEntity[i].Y < CDeadZoneMax) and Boolean(
           + TInterlocked.Exchange(GEntity[i].Live, 0)
         ))
+        //camera movement
+        + Integer((bfCameraFollows in GENtity[i].BehaviorFlags) and Boolean(
+          + Integer((GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
+          + Integer((GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))
+        ))
+        + Integer((bfCameraCenters in GEntity[i].BehaviorFlags) and Boolean(
+            TInterlocked.Exchange(FNextCameraX, Trunc(GEntity[i].X - FScreenWidth div 2))
+          + TInterlocked.Exchange(FNextCameraY, Trunc(GEntity[i].Y - FScreenHeight div 2))
+        ))
         + TInterlocked.Add(GEntity[i].LiveTime, -1)
         //check if we died and take actions if this is true
         + Integer(((GEntity[i].Live < 1) or (GEntity[i].LiveTime = 0)) and Boolean(Trunc(
@@ -419,24 +429,13 @@ begin
             + TInterlocked.Exchange(LNextEntity, i + LNextEntity)
             + TInterlocked.Exchange(GEntity[LNextEntity].Active, 1)
             + TInterlocked.Exchange(GEntity[LNextEntity].LastCollider, GEntity[i].LastCollider)
-//            + TInterlocked.Exchange()
             + Integer((sfCopyPosition in GEntity[LNextEntity].SpawnFlags) and Boolean(Trunc(
               + TInterlocked.Exchange(GEntity[LNextEntity].X, GEntity[i].X)
               + TInterlocked.Exchange(GEntity[LNextEntity].Y, GEntity[i].Y)
             )))
           )))
         )))
-//        //LiveTimeCheck
-//        + Integer((GEntity[i].Active <> 0) and Boolean(Trunc(
-//            TInterlocked.Add(GEntity[i].LiveTime, -1)
-//          + Integer((GEntity[i].LiveTime = 0) and Boolean(Trunc(
-//              TInterlocked.Exchange(GEntity[i].Active, 0)
-//          )))
-//        )))
-        //camera movement
-         + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X > FScreenWidth-CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Min(FLevel.Width - FScreenWidth, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - FScreenWidth + CCameraDeadZone))))))
-         + Integer(GEntity[i].Input and (GEntity[i].X - FCamera_X < CCameraDeadZone) and Boolean(TInterlocked.Exchange(FNextCameraX, Max(0, Trunc(FCamera_X + (GEntity[i].X - FCamera_X - CCameraDeadZone))))))
-        //check our current state(standing, walking, Jumping/InAir)
+       //check our current state(standing, walking, Jumping/InAir)
          + TInterlocked.Exchange(LSpriteState, CStand)
          + Integer((GEntity[i].Vel_X <> 0) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CWalk))))
          + Integer(((GEntity[i].DownBlocked = 0) and (GEntity[i].InAirTimer > 1)) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CJump))))
@@ -450,10 +449,16 @@ begin
             ))
           )
         //Calculate current Frame of sprite to display
-        + TInterlocked.Exchange(LSpriteFrame, FFrameCounter div (50 div 16) mod (LSprite.Width div CSpriteWidth))
+        + Integer(((GEntity[i].Frames > 0) and Boolean(
+          TInterlocked.Exchange(LFrameCount, GEntity[i].Frames) * 0 - 1))
+          or
+          Boolean(TInterlocked.Exchange(LFrameCount, (LSprite.Width div CSpriteWidth)))
+        )
+        + TInterlocked.Exchange(LFrameWidth, LSprite.Width div LFrameCount)
+        + TInterlocked.Exchange(LSpriteFrame, FFrameCounter div (50 div 16) mod LFrameCount)
         //Translate EntityPosition
-        + TInterlocked.Exchange(LX, Trunc(GEntity[i].X - CHalfSpriteWidth - FCamera_X))
-        + TInterlocked.Exchange(LY, Trunc(GEntity[i].Y - LSprite.Height + CHalfSpriteHeight - FCamera_Y))
+        + TInterlocked.Exchange(LX, Trunc(GEntity[i].X - LFrameWidth div 2 - FCamera_X))
+        + TInterlocked.Exchange(LY, Trunc(GEntity[i].Y - LSprite.Height div 2 - FCamera_Y))
         //recalculate the BB area
         + TInterlocked.Exchange(LBBLeft, Trunc(GEntity[i].X) - GEntity[i].bbWidth div 2)
         + TInterlocked.Exchange(LBBRight, Trunc(GEntity[i].X) + GEntity[i].bbWidth div 2)
@@ -479,8 +484,8 @@ begin
 //          FDynamicCollision[not FCurrentDC].Canvas.Pixels[LBBLeft + CEdgeIdent, LBBBottom - 1]:= clFuchsia;
 //          FDynamicCollision[not FCurrentDC].Canvas.Pixels[LBBRight - 1 - CEdgeIdent, LBBBottom - 1]:= clFuchsia;
 //      //debugstuff
-      DrawRect(FBackBUffer.Canvas, LSPrite.Canvas, LX, LY,
-        Rect(LSpriteFrame*CSpriteWidth, 0, LSpriteFrame*CSpriteWidth + CSpriteWidth, LSprite.Height));
+      DrawRect(FBackBUffer.Canvas, LSprite.Canvas, LX, LY,
+        Rect(LSpriteFrame*LFrameWidth, 0, LSpriteFrame*LFrameWidth + LFrameWidth, LSprite.Height));
     end;
   end;
   Display.Repaint();

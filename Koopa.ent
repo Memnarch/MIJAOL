@@ -3,7 +3,7 @@ Sprite: 8;
 Vel_X: -1;
 Gravity: 1;
 bbWidth: 16;
-bbHeight: 16;
+bbHeight: 24;
 DamageLeft: 1;
 DamageRight: 1;
 DamageBottom: 1;

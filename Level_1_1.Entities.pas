@@ -5,7 +5,7 @@ interface
 type
   TSpawnFlag = (sfCopyPosition);
   TSpawnFlags = set of TSpawnFlag;
-  TBehaviorFlag = (bfIgnoreCollision);
+  TBehaviorFlag = (bfIgnoreCollision, bfCameraFollows, bfCameraCenters, bfAlwaysUpdate);
   TBehaviorFlags = set of TBehaviorFlag;
 
   TEntity = record
@@ -17,6 +17,7 @@ type
     Live: Integer;
     LiveTime: Integer;
     Sprite: Integer;
+    Frames: Integer;
     Vel_X: Single;
     Vel_Y: Single;
     Gravity: Single;
@@ -44,10 +45,12 @@ type
   end;
 
 const
-  CBottom = 0;
+  CFirstEntity = 0;
+  CLastEntity = 108;
+  CGameOverScreen = CLastEntity;
 
 var
-  GEntity: array[0..107] of TEntity =
+  GEntity: array[CFirstEntity..CLastEntity] of TEntity =
   (
     (
       Active: 1;
@@ -560,6 +563,13 @@ var
       X: 2840;
       Y: 208;
       {$i Gumba.ent}
+    ),
+    //gamescreens
+    (
+      Live: 1;
+      Sprite: 10;
+      Frames: 1;
+      BehaviorFlags: [bfIgnoreCollision, bfCameraCenters, bfAlwaysUpdate];
     )
   );
 
