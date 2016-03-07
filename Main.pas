@@ -37,8 +37,9 @@ type
     FNumActiveScreens: Integer;
     FOldDimension: TRect;
     FOldStyle: TBorderStyle;
+    FImageFolder: string;
     procedure LoadSprites;
-    procedure LoadSprite(AIndex: Integer; const AStand, AWalk, AJump: string);
+    procedure LoadSprite(AIndex: Integer; AStates: array of string);
     procedure DrawRect(ATarget, ASource: TCanvas; AX, AY: Integer; ASRect: TRect);
   public
     { Public declarations }
@@ -52,6 +53,7 @@ var
 implementation
 
 uses
+  IOUtils,
   PNGImage,
   Level_1_1.Entities,
   SyncObjs,
@@ -73,14 +75,15 @@ const
 constructor TScreenForm.Create(AOwner: TComponent);
 begin
   inherited;
+  FImageFolder := '..\..';
   FBackBuffer := TBitmap.Create();
   FBackBuffer.SetSize(256, 240);
   FBackBuffer.PixelFormat := pf32bit;
   FLevel := TBitmap.Create();
-  FLevel.LoadFromFile('..\..\Level-1-1.bmp');
+  FLevel.LoadFromFile(TPath.Combine(FImageFolder, 'Level-1-1.bmp'));
   FLevel.PixelFormat := pf32bit;
   FStaticCollision := TBitmap.Create();
-  FStaticCollision.LoadFromFile('..\..\Level-1-1-Collision.bmp');
+  FStaticCollision.LoadFromFile(TPath.Combine(FImageFolder, 'Level-1-1-Collision.bmp'));
   FStaticCollision.PixelFormat := pf32bit;
   FDynamicCollision[False] := TBitmap.Create();
   FDynamicCollision[False].SetSize(FStaticCollision.Width, FStaticCollision.Height);
@@ -197,38 +200,29 @@ begin
   end;
 end;
 
-procedure TScreenForm.LoadSprite(AIndex: Integer; const AStand, AWalk,
-  AJump: string);
+procedure TScreenForm.LoadSprite(AIndex: Integer;  AStates: array of string);
 var
   LTemp: TPngImage;
+  i, LState: Integer;
 begin
   LTemp := TPngImage.Create();
   try
-
-    LTemp.LoadFromFile(AStand);
-    FSprites[AIndex][0] := TBitmap.Create();
-    FSprites[AIndex][0].Assign(LTemp);
-    FFlippedSprites[AIndex][0] := TBitmap.Create();
-    FFlippedSprites[AIndex][0].SetSize(LTemp.Width, LTemp.Height);
-    FFlippedSprites[AIndex][0].PixelFormat := pf32bit;
-    FFlippedSprites[AIndex][0].Canvas.CopyRect(Rect(FSprites[AIndex][0].Width, 0, -1, FSprites[AIndex][0].Height), FSprites[AIndex][0].Canvas, FSprites[AIndex][0].Canvas.ClipRect);
-
-    LTemp.LoadFromFile(AWalk);
-    FSprites[AIndex][1] := TBitmap.Create();
-    FSprites[AIndex][1].Assign(LTemp);
-    FFlippedSprites[AIndex][1] := TBitmap.Create();
-    FFlippedSprites[AIndex][1].SetSize(LTemp.Width, LTemp.Height);
-    FFlippedSprites[AIndex][1].PixelFormat := pf32bit;
-    FFlippedSprites[AIndex][1].Canvas.CopyRect(Rect(FSprites[AIndex][1].Width, 0, -1, FSprites[AIndex][1].Height), FSprites[AIndex][1].Canvas, FSprites[AIndex][1].Canvas.ClipRect);
-
-    LTemp.LoadFromFile(AJump);
-    FSprites[AIndex][2] := TBitmap.Create();
-    FSprites[AIndex][2].Assign(LTemp);
-    FFlippedSprites[AIndex][2] := TBitmap.Create();
-    FFlippedSprites[AIndex][2].SetSize(LTemp.Width, LTemp.Height);
-    FFlippedSprites[AIndex][2].PixelFormat := pf32bit;
-    FFlippedSprites[AIndex][2].Canvas.CopyRect(Rect(FSprites[AIndex][2].Width, 0, -1, FSprites[AIndex][2].Height), FSprites[AIndex][2].Canvas, FSprites[AIndex][2].Canvas.ClipRect);
-
+    LState := 0;
+    for i := LState to Length(FSprites[0])  do
+    begin
+      if (i = LState) and (AStates[LState] <> '') then
+      begin
+        LTemp.LoadFromFile(TPath.Combine(FImageFolder, AStates[LState]));
+      end;
+      FSprites[AIndex, i] := TBitmap.Create();
+      FSprites[AIndex, i].Assign(LTemp);
+      FFlippedSprites[AIndex][i] := TBitmap.Create();
+      FFlippedSprites[AIndex][i].SetSize(LTemp.Width, LTemp.Height);
+      FFlippedSprites[AIndex][i].PixelFormat := pf32bit;
+      FFlippedSprites[AIndex][i].Canvas.CopyRect(Rect(FSprites[AIndex][i].Width, 0, -1, FSprites[AIndex][i].Height), FSprites[AIndex][i].Canvas, FSprites[AIndex][i].Canvas.ClipRect);
+      if (LState < High(AStates)) then
+        Inc(LState);
+    end;
   finally
     LTemp.Free;
   end;
@@ -236,16 +230,16 @@ end;
 
 procedure TScreenForm.LoadSprites;
 begin
-  LoadSprite(0, '..\..\Mario_Stand.png', '..\..\Mario_Walk.png', '..\..\Mario_Jump.png');
-  LoadSprite(1, '..\..\Mario_Dead.png', '..\..\Mario_Dead.png', '..\..\Mario_Dead.png');
-  LoadSprite(2, '..\..\Brick.png', '..\..\Brick.png', '..\..\Brick.png');
-  LoadSprite(3, '..\..\Gumba_Walk.png', '..\..\Gumba_Walk.png', '..\..\Gumba_Walk.png');
-  LoadSprite(4, '..\..\Gumba_Dead.png', '..\..\Gumba_Dead.png', '..\..\Gumba_Dead.png');
-  LoadSprite(5, '..\..\ItemBlock.png', '..\..\ItemBlock.png', '..\..\ItemBlock.png');
-  LoadSprite(6, '..\..\ItemBlock_Empty.png', '..\..\ItemBlock_Empty.png', '..\..\ItemBlock_Empty.png');
-  LoadSprite(7, '..\..\Coin_Spinning.png', '..\..\Coin_Spinning.png', '..\..\Coin_Spinning.png');
-  LoadSprite(8, '..\..\Koopa_Walk.png', '..\..\Koopa_Walk.png', '..\..\Koopa_Walk.png');
-  LoadSprite(9, '..\..\Koopa_Shell.png', '..\..\Koopa_Shell.png', '..\..\Koopa_Shell.png');
+  LoadSprite(0,['Mario_Stand.png', 'Mario_Walk.png', 'Mario_Jump.png']);
+  LoadSprite(1, ['Mario_Dead.png']);
+  LoadSprite(2, ['Brick.png']);
+  LoadSprite(3, ['Gumba_Walk.png']);
+  LoadSprite(4, ['Gumba_Dead.png']);
+  LoadSprite(5, ['ItemBlock.png']);
+  LoadSprite(6, ['ItemBlock_Empty.png']);
+  LoadSprite(7, ['Coin_Spinning.png']);
+  LoadSprite(8, ['Koopa_Walk.png']);
+  LoadSprite(9, ['Koopa_Shell.png']);
 end;
 
 const
