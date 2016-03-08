@@ -1,6 +1,7 @@
 Live: 1;
 Sprite: 3;
 Vel_X: -1;
+BounceX: 1;
 Gravity: 1;
 bbWidth: 16;
 bbHeight: 16;

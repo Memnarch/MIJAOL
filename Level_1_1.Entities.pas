@@ -20,6 +20,8 @@ type
     Frames: Integer;
     Vel_X: Single;
     Vel_Y: Single;
+    BounceX: Single;
+    BounceY: Single;
     Gravity: Single;
     LeftBlocked: Integer;
     RightBlocked: Integer;

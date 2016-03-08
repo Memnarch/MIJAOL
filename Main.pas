@@ -365,10 +365,14 @@ begin
           ))
         + Integer( (GEntity[i].UpBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, GEntity[i].Y + 1))))
         + Integer( (GEntity[i].DownBlocked <> 0) and Boolean(Trunc(TInterlocked.Exchange(GEntity[i].Y, LY - 1))))
-        //reset gravity velocity when colliding to reset falling momentum
+        //bounce/reset velocity when colliding to reset falling momentum
+        + Integer( (((GEntity[i].LeftBlocked <> 0) and (GEntity[i].Vel_X < 0)) or ((GEntity[i].RightBlocked <> 0) and (GEntity[i].Vel_X > 0)))
+          and Boolean(Trunc(
+            TInterlocked.Exchange(GEntity[i].Vel_X, GEntity[i].Vel_X * -GEntity[i].BounceX)
+          )))
         + Integer( (((GEntity[i].UpBlocked <> 0) and (GEntity[i].Vel_Y > 0)) or ((GEntity[i].DownBlocked <> 0) and (GEntity[i].Vel_Y < 0)))
             and Boolean(Trunc(
-              TInterlocked.Exchange(GEntity[i].Vel_Y, 0))
+              TInterlocked.Exchange(GEntity[i].Vel_Y, GEntity[i].Vel_Y * -GEntity[i].BounceY))
             + TInterlocked.Exchange(GEntity[i].InAirTimer, 0)
             )
           )
