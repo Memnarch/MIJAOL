@@ -48,7 +48,7 @@ type
 
 const
   CFirstEntity = 0;
-  CLastEntity = 110;
+  CLastEntity = 112;
   CGameOverScreen = CLastEntity;
 
 var
@@ -594,6 +594,31 @@ var
       X: 2840;
       Y: 208;
       {$i Gumba.ent}
+    ),
+    //FinishBlock
+    //Invisible and put on the ground so it triggers when Mario walks over
+    (
+      Active: 1;
+      X: 3272;
+      Y: 217;
+      Live: 1;
+      Sprite: 13;
+      bbWidth: 4;
+      bbHeight: 4;
+      VulnerableLeft: 1;
+      VulnerableRight: 1;
+      VulnerableTop: 1;
+      VulnerableBottom: 1;
+      ReplaceOnDead: 1;
+      BehaviorFlags: [bfIgnoreCollision];
+    ),
+    //FinishScreen
+    (
+      Live: 1;
+      Sprite: 12;
+      Frames: 1;
+      SpawnFlags: [sfCopyPosition];
+      BehaviorFlags: [bfIgnoreCollision, bfCameraCenters];
     ),
     //GameOverScreen
     (

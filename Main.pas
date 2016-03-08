@@ -23,8 +23,8 @@ type
     //first dimension is for different characters
     //second dimension represents the states:
     //0 = stand, 1 = walk, 2 =  jump/InAir
-    FSprites: array[0..11] of array[0..2] of TBitmap;
-    FFlippedSprites: array[0..11] of array[0..2] of TBitmap;
+    FSprites: array[0..13] of array[0..2] of TBitmap;
+    FFlippedSprites: array[0..13] of array[0..2] of TBitmap;
     FCamera_X: Integer;
     FCamera_Y: Integer;
     FNextCameraX: Integer;
@@ -245,6 +245,8 @@ begin
   LoadSprite(9, ['Koopa_Shell.png']);
   LoadSprite(10, ['GameOver.png']);
   LoadSprite(11, ['StartScreen.png']);
+  LoadSprite(12, ['Finish.png']);
+  LoadSprite(13, ['Null.png']);
 end;
 
 const
