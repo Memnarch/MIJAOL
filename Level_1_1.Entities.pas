@@ -48,15 +48,44 @@ type
 
 const
   CFirstEntity = 0;
-  CLastEntity = 108;
+  CLastEntity = 110;
   CGameOverScreen = CLastEntity;
 
 var
   GEntity: array[CFirstEntity..CLastEntity] of TEntity =
   (
+    //Dummy enemie the StartScreen collides with and kills it
     (
       Active: 1;
-      X: 8;
+      X: 3256;
+      Y: 400;
+      Live: 1;
+      Sprite: 0;
+      bbWidth: 64;
+      bbHeight: 8;
+      DamageBottom: 1;
+      VulnerableBottom: 1;
+    ),
+    //StartScreen which is replaced by Mario on death
+    (
+      Active: 1;
+      X: 3256;
+      Y: 420;
+      Input: True;
+      Team: 1;
+      Live: 1;
+      Sprite: 11;
+      Frames: 1;
+      Gravity: 1;
+      bbWidth: 8;
+      bbHeight: 8;
+      DamageTop: 1;
+      VulnerableTop: 1;
+      ReplaceOnDead: 1;
+      BehaviorFlags: [bfCameraCenters];
+    ),
+    (
+      X: 40;
       Y: 208;
       {$i Mario.ent}
     ),
@@ -513,7 +542,7 @@ var
     (
       Active: 1;
       X: 1752;
-      Y: 208;
+      Y: 204;
       {$i Koopa.ent}
     ),
     //enemies of fourth blockgroup
@@ -566,7 +595,7 @@ var
       Y: 208;
       {$i Gumba.ent}
     ),
-    //gamescreens
+    //GameOverScreen
     (
       Live: 1;
       Sprite: 10;

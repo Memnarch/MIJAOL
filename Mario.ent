@@ -20,6 +20,6 @@ Vel_Y: 8;
 Gravity: 1;
 bbWidth: 12;
 bbHeight: 16;
-ReplaceOnDead: CGameOverScreen - 1;
+ReplaceOnDead: CGameOverScreen - 3;
 SpawnFlags: [sfCopyPosition];
 BehaviorFlags: [bfIgnoreCollision];
