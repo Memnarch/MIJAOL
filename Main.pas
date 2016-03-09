@@ -222,7 +222,7 @@ begin
       FFlippedSprites[AIndex][i] := TBitmap.Create();
       FFlippedSprites[AIndex][i].SetSize(LTemp.Width, LTemp.Height);
       FFlippedSprites[AIndex][i].PixelFormat := pf32bit;
-      FFlippedSprites[AIndex][i].Canvas.CopyRect(Rect(FSprites[AIndex][i].Width, 0, -1, FSprites[AIndex][i].Height), FSprites[AIndex][i].Canvas, FSprites[AIndex][i].Canvas.ClipRect);
+      FFlippedSprites[AIndex][i].Canvas.CopyRect(Rect(FSprites[AIndex][i].Width - 1, 0, -1, FSprites[AIndex][i].Height), FSprites[AIndex][i].Canvas, FSprites[AIndex][i].Canvas.ClipRect);
       if (LState < High(AStates)) then
         Inc(LState);
     end;
