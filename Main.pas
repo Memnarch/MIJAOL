@@ -211,7 +211,7 @@ begin
   LTemp := TPngImage.Create();
   try
     LState := 0;
-    for i := LState to Length(FSprites[0])  do
+    for i := LState to High(FSprites[0])  do
     begin
       if (i = LState) and (AStates[LState] <> '') then
       begin
