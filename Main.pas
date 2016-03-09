@@ -36,7 +36,7 @@ type
     FTargetDimensions: TRect;
     FNumActiveScreens: Integer;
     FOldDimension: TRect;
-    FOldStyle: TBorderStyle;
+    FOldStyle: TFormBorderStyle;
     FImageFolder: string;
     procedure LoadSprites;
     procedure LoadSprite(AIndex: Integer; AStates: array of string);
