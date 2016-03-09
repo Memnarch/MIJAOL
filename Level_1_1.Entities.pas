@@ -18,6 +18,8 @@ type
     LiveTime: Integer;
     Sprite: Integer;
     Frames: Integer;
+    Orientation: Integer;
+    NoDirection: Boolean;
     Vel_X: Single;
     Vel_Y: Single;
     BounceX: Single;
@@ -76,6 +78,7 @@ var
       Live: 1;
       Sprite: 11;
       Frames: 1;
+      NoDirection: True;
       Gravity: 1;
       bbWidth: 8;
       bbHeight: 8;

@@ -451,9 +451,17 @@ begin
          + Integer((GEntity[i].Vel_X <> 0) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CWalk))))
          + Integer(((GEntity[i].DownBlocked = 0) and (GEntity[i].InAirTimer > 1)) and Boolean(Trunc(TInterlocked.Exchange(LSpriteState, CJump))))
         //check if we need to use a flipped version of our image or the normal one
-        + Integer(((GEntity[i].Vel_X < 0) and
+        + Integer((not GEntity[i].NoDirection) and (GEntity[i].InAirTimer <= 1) and (GEntity[i].Vel_X <> 0)
+            and (Boolean((GEntity[i].Vel_X < 0) and Boolean(Trunc(
+            + TInterlocked.Exchange(GEntity[i].Orientation, -1) * 0 - 1
+          )))
+          or Boolean(
+              TInterlocked.Exchange(GEntity[i].Orientation, 1)
+          ))
+        )
+        + Integer(((GEntity[i].Orientation < 0) and
             Boolean(Trunc(
-              Integer(TInterlocked.Exchange<TBitmap>(LSprite, FFlippedSprites[GEntity[i].Sprite][LSpriteState])) * 0 + 1
+              Integer(TInterlocked.Exchange<TBitmap>(LSprite, FFlippedSprites[GEntity[i].Sprite][LSpriteState])) * 0 - 1
             ))) or
             Boolean(Trunc(
               Integer(TInterlocked.Exchange<TBitmap>(LSprite, FSprites[GEntity[i].Sprite][LSpriteState]))
