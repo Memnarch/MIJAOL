@@ -282,6 +282,9 @@ begin
   FBackBuffer.Canvas.Draw(-FCamera_X, -FCamera_Y, FLevel);
   for i := Low(GEntity) to High(GEntity) do
   begin
+    //the following giant IF is executed per Entity. It evaluates if the Entity must be updated/painted
+    //and executes it's logik at the same run!
+
       //execute only if active and has input or is near to the camera
     if (GEntity[i].Active <> 0) and (GEntity[i].Input or (bfAlwaysUpdate in GEntity[i].BehaviorFlags) or (((GEntity[i].X - FCamera_X) >= -CActivityBorder) and ((GEntity[i].X - FCamera_X) < FScreenWidth + CActivityBorder))) and Boolean(Trunc(
         //reset some values
